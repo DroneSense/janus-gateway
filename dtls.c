@@ -323,6 +323,10 @@ error:
 	return -1;
 }
 
+/* Versioning info ( */
+const char *janus_get_ssl_version(void) {
+	return OPENSSL_VERSION_TEXT;
+}
 
 /* DTLS-SRTP initialization */
 gint janus_dtls_srtp_init(const char *server_pem, const char *server_key, const char *password, guint timeout) {
@@ -354,7 +358,11 @@ gint janus_dtls_srtp_init(const char *server_pem, const char *server_key, const 
 
 	/* Go on and create the DTLS context */
 #if JANUS_USE_OPENSSL_PRE_1_1_API
+#if defined(LIBRESSL_VERSION_NUMBER)
+	ssl_ctx = SSL_CTX_new(DTLSv1_method());
+#else
 	ssl_ctx = SSL_CTX_new(DTLSv1_2_method());
+#endif
 #else
 	ssl_ctx = SSL_CTX_new(DTLS_method());
 #endif
@@ -895,6 +903,8 @@ done:
 }
 
 void janus_dtls_srtp_send_alert(janus_dtls_srtp *dtls) {
+	if(!dtls)
+		return;
 	/* Send alert */
 	janus_refcount_increase(&dtls->ref);
 	if(dtls != NULL && dtls->ssl != NULL) {

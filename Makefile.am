@@ -195,6 +195,7 @@ version.c: FORCE | $(dir_target)
 	echo "$(build_date)" | awk 'BEGIN {} {print "const char *janus_build_git_time = \""$$0"\";"} END {} ' >> version.c
 	echo "$(JANUS_VERSION)" | awk 'BEGIN {} {print "int janus_version = "$$0";"} END {} ' >> version.c
 	echo "$(JANUS_VERSION_STRING)" | awk 'BEGIN {} {print "const char *janus_version_string = \""$$0"\";"} END {} ' >> version.c
+	pkg-config --modversion nice | awk 'BEGIN {} {print "const char *libnice_version_string = \""$$0"\";"} END {} ' >> version.c
 
 $(dir_present):
 	`which git` rev-parse HEAD | awk 'BEGIN {print "#include \"version.h\""} {print "const char *janus_build_git_sha = \"" $$0"\";"} END {}' > version.c
@@ -210,6 +211,7 @@ check-fuzzers: FORCE
 	CC=$(CC) SKIP_JANUS_BUILD=1 LIB_FUZZING_ENGINE=fuzzers/standalone.o ./fuzzers/build.sh
 	./fuzzers/run.sh rtcp_fuzzer out/rtcp_fuzzer_seed_corpus
 	./fuzzers/run.sh rtp_fuzzer out/rtp_fuzzer_seed_corpus
+	./fuzzers/run.sh sdp_fuzzer out/sdp_fuzzer_seed_corpus
 
 .PHONY: FORCE
 FORCE:
